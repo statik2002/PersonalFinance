@@ -1,33 +1,35 @@
+import datetime
+import json
+from decimal import Decimal
+from os import system, name
 from classes import Wallet
+from menu_function import clear, show_menu, input_operation_type, input_operation_date, input_operation_value, \
+    input_description
 
 wallet = Wallet()
-
-#try:
-#    wallet.add_operation(operation={'operation_item': 'PROFIT', 'description': 'No description', 'salary': 1500.00, 'date': '2024-05-20'})
-#    wallet.add_operation(operation={'operation_item': 'EXPENSES', 'description': 'No description', 'salary': 300.50, 'date': '2024-05-03'})
-#    wallet.add_operation(operation={'operation_item': 'PROFIT', 'description': 'No description', 'salary': -45, 'date': '2024-05-03'})
-#except ValueError as error:
-#    print(error)
-
-
-#for operation in Wallet.operations:
-#    print(operation.operation_item, operation.salary, operation.date)
-
-flag = True
-
-while flag:
-    operation = int(input('Введите номер операции:\n1. Ввод операции\n2.Показать баланс\n3. Выход\n'))
+cycleFlag = True
+while cycleFlag:
+    clear()
+    operation = show_menu()
 
     if operation == 1:
-        input_operation = input('Введите операцию в виде [PROFIT\EXPENSES, Описание, Сумма, Дата]').split(',')
-        wallet.add_operation(operation={
-            'operation_item': input_operation[0],
-            'description': input_operation[1],
-            'salary': input_operation[2],
-            'date': input_operation[3].strip()
-        })
+        operation_type = input_operation_type()
+        date = input_operation_date()
+        value = input_operation_value()
+        description = input_description()
+        op = {'operation_item': operation_type, 'description': description, 'salary': value, 'date': date}
+        wallet.add_operation(operation=op)
+        print(f'Ваша операция с параметрами {op}')
+
     elif operation == 2:
         print(f'Ваш баланс операций: {wallet.get_balance()}')
+        input('Нажмите любую клавишу для выхода в меню')
+
     elif operation == 3:
+        wallet.show_operations()
+        input('Нажмите любую клавишу для выхода в меню')
+
+    elif operation == 4:
+        wallet.save_operations()
         print('Bye bye!')
-        flag = False
+        cycleFlag = False

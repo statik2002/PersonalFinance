@@ -1,71 +1,82 @@
-import re
-from _pydecimal import Decimal
-import datetime
-from typing import List
+from decimal import Decimal
 
 
-operation_type = ['PROFIT', 'EXPENSES']
+operation_type = ['Доход', 'Расход']
 
 
 class Operation:
 
-    def __init__(self, operation_item: str, date: str, description: str = "", salary: Decimal = 0.0):
+    def __init__(self, operation_item: str, date: str, description: str = "", salary: Decimal = 0.0) -> None:
         self.operation_item = operation_item
         self.date = date
         self.description = description
         self.salary = salary
 
-    @property
-    def operation_item(self):
-        return self._operation_item
+    def __str__(self) -> str:
+        return f'{self.operation_item};{self.date};{self.description};{self.salary}'
 
-    @operation_item.setter
-    def operation_item(self, value):
-        if value not in operation_type:
-            raise ValueError("Не верный тип операции")
-        self._operation_item = value
+    def show(self) -> list:
+        return [self.operation_item, self.date, str(self.salary), self.description]
 
-    @property
-    def date(self):
-        return self._date
-
-    @date.setter
-    def date(self, value):
-        try:
-            date = datetime.date.fromisoformat(value)
-            self._date = value
-        except ValueError:
-            raise ValueError("Не правильный формат даты")
-
-    @property
-    def salary(self):
-        return self._salary
-
-    @salary.setter
-    def salary(self, value):
-        if not isinstance(Decimal(value), Decimal):
-            raise ValueError(f'Число {value} не Decimal')
-        if Decimal(value) < 0:
-            raise ValueError(f'Число сумма операции = [{value}] не может быть меньше 0')
-        self._salary = Decimal(value)
 
 
 class Wallet:
     operations: list = []
 
-    def __init__(self, db_path: str = 'db.txt'):
+    def __init__(self, db_path: str = 'db.txt') -> None:
         self.db_path = db_path
+        self.operations = self.load_operations()
 
-    @staticmethod
-    def add_operation(operation: dict):
-        Wallet.operations.append(Operation(**operation))
+    def add_operation(self, operation: dict) -> None:
+        self.operations.append(Operation(**operation))
 
-    def get_balance(self):
-        total = 0
+    def get_balance(self) -> Decimal:
+        total: Decimal = Decimal(0.0)
+        if len(self.operations) < 1:
+            return Decimal(0.0)
         for operation in self.operations:
-            if operation.operation_item == 'PROFIT':
+            if operation.operation_item == operation_type[0]:
                 total += operation.salary
-            elif operation.operation_item == 'EXPENSES':
-                total -= operation.salary
+            elif operation.operation_item == operation_type[1]:
+                total = total - operation.salary
 
         return total
+
+    def save_operations(self) -> None:
+        with open(self.db_path, 'w') as f:
+            for operation in self.operations:
+                f.write(f'{operation.__str__()}\n')
+
+    def load_operations(self) -> list:
+        operations = []
+        with open(self.db_path, 'r') as f:
+            ops = f.readlines()
+            for line in ops:
+                operation = line.split(';')
+                print(operation)
+                operations.append(Operation(operation[0], operation[1], operation[2], Decimal(operation[3])))
+
+        return operations
+
+    def show_operations(self) -> None:
+        if len(self.operations) < 1:
+            print('У вас нет операций')
+            return
+        max_columns = []
+        operations = [operation.show() for operation in self.operations]
+        for col in zip(*operations):
+            len_el = []
+            [len_el.append(len(el)) for el in col]
+            max_columns.append(max(len_el))
+
+        columns = ['id', 'Тип операции', 'Дата операции', 'Сумма операции', 'Описание']
+        for column in columns:
+            print(f'{column:{max(max_columns) + 5}}', end='')
+        print()
+        print(f'{"=" * max(max_columns) * 5}')
+
+        for index,operation in enumerate(operations):
+            operation = [str(index)] + operation
+            for column in operation:
+                print(f'{column:{max(max_columns) + 5}}', end='')
+            print()
