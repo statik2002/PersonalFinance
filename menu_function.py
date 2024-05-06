@@ -6,7 +6,7 @@ from classes import operation_type
 
 
 
-menu_items = ['1. Ввод операции', '2. Показать баланс', '3. Показать все операции', '4. Выход']
+menu_items = ['1. Ввод операции', '2. Показать баланс', '3. Показать все операции', '4. Редактировать операцию', '5. Выход']
 
 def clear() -> None:
     if name == 'nt':
@@ -81,3 +81,20 @@ def show_menu() -> int:
             continue
 
         return int(operation)
+
+def edit_operation_menu(operations: list) -> None:
+    while True:
+        clear()
+        operation_id = input('Введите id операции: ')
+
+        if not operation_id.isdigit() and 1 > int(operation_id) > len(operations):
+            print('Введен неправильный id операции')
+            input('Для нового ввода id операции, нажмите любую клавишу')
+
+        else:
+            operation = operations[int(operation_id) - 1]
+            print(f'Сейчас операция {operation.operation_item}. Изменить на {operation_type[1:]+operation_type[:1]}')
+
+
+
+
